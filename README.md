@@ -51,6 +51,7 @@ cd ~/wazuh-offline
 
 Install all `.deb` files using 
 ```bash 
+cd offline-packages/
 sudo dpkg -i *.deb
 ```
 
