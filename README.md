@@ -26,28 +26,11 @@ on **Ubuntu Server** in Hyper-V, using the **assisted single-node method**.
 - Hyper-V or other hypervisor with access to ISO or shared folder  
 - All `.tar.gz`, scripts and `.deb` files copied to the VM
 
----
 
-## 2. Using the Offline ISO (Recommended)
+## 2. Download
+Download all files from repo + offline tar.gz from release
 
-1. Download `wazuh-transfer.iso` from **GitHub Release**  
-2. Mount the ISO in the VM:
-
-```bash
-sudo mkdir -p /mnt/cdrom
-sudo mount /dev/cdrom /mnt/cdrom
-ls /mnt/cdrom
-```
-
-3. Copy files to a local folder:
-
-```bash
-mkdir -p ~/wazuh-offline
-cp /mnt/cdrom/* ~/wazuh-offline/
-cd ~/wazuh-offline
-```
-
-## 3 Install Essential Offline Packages
+## 3. Install Essential Offline Packages
 
 Install all `.deb` files using 
 ```bash 
