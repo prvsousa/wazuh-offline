@@ -1,88 +1,175 @@
 # Wazuh Offline Installation – Single-Node
 
-This repository contains all files required to install the **Wazuh server** offline 
-on **Ubuntu Server** in Hyper-V, using the **assisted single-node method**.
+This repository provides a **simple offline deployment method** for installing the Wazuh server on **Ubuntu Server** using the **assisted single-node installation**.
+
+The installer script is stored in the repository root, while the required offline packages are available in the **Releases section**.
 
 ---
 
-## Repository Contents
+# Repository Structure
 
-- `README.md` – This installation guide  
-- `wazuh-install.sh` – Official Wazuh offline assisted install script  
-- `wazuh-install-files.tar` – Additional Wazuh configuration files and scripts  
-- `wazuh-offline.tar.gz` – Essential `.deb` packages and dependencies for offline installation  
-- `wazuh-transfer.iso` – ISO containing all files above (optional)  
-- `/deb/` – Optional folder with individual `.deb` packages if not using ISO  
+Repository root:
 
-> Included packages: `debconf`, `adduser`, `procps`, `apt-transport-https`, 
-`gnupg`, `debhelper (≥9)`, `libcap2-bin` and all dependencies.
+wazuh-install.sh – Official Wazuh assisted installation script
+
+GitHub Release assets:
+
+wazuh-install-files.tar – Wazuh configuration and installation support files  
+wazuh-offline.tar.gz – Wazuh packages required for offline installation  
+offline-deps.zip – Ubuntu dependency bundle required by the installer  
+
+These files must be downloaded from the **Release** and copied to the offline VM.
 
 ---
 
-## 1. Prerequisites
+# 1. Prerequisites
 
-- Ubuntu Server VM compatible with included packages  
-- User with **sudo/root** access  
-- Hyper-V or other hypervisor with access to ISO or shared folder  
-- All `.tar.gz`, scripts and `.deb` files copied to the VM
+Before starting:
 
+- Ubuntu Server **24.04.3 recommended**
+- amd64 / x86_64 system
+- User with **sudo privileges**
+- Hyper-V, VMware, VirtualBox, or physical system
+- Internet access **only for downloading the release files**
+- Offline VM with files transferred via:
+  - shared folder
+  - ISO
+  - USB
+  - SCP from staging host
 
-## 2. Download
-Download all files from repo + offline tar.gz from release
+---
 
-## 3. Install Essential Offline Packages
+# 2. Download Required Files
 
-Install all `.deb` files using 
-```bash 
-cd offline-packages/
+From the repository:
+
+Download:
+wazuh-install.sh
+
+From the **Release section** download:
+
+wazuh-install-files.tar  
+wazuh-offline.tar.gz  
+offline-deps.zip  
+
+Copy all files to the VM, for example:
+
+/opt/wazuh-offline/
+
+Example:
+
+mkdir /opt/wazuh-offline
+cd /opt/wazuh-offline
+
+---
+
+# 3. Extract Files
+
+Extract the dependency bundle:
+
+unzip offline-deps.zip
+
+Extract Wazuh offline packages:
+
+tar -xvf wazuh-offline.tar.gz
+
+Extract installation support files:
+
+tar -xvf wazuh-install-files.tar
+
+---
+
+# 4. Install Required Offline Dependencies
+
+Install all dependency packages first:
+
+cd offline-deps
 sudo dpkg -i *.deb
-```
 
-Fix dependencies if needed using `sudo apt install -f`.
+If dpkg reports dependency issues:
 
-> Ensures all packages required by Wazuh are installed:  
-> `debconf`, `adduser`, `procps`, `apt-transport-https`, `gnupg`, `debhelper`, `libcap2-bin`.
+sudo dpkg -i *.deb || true
+sudo apt install -f
+
+This installs required packages such as:
+
+debconf  
+adduser  
+procps  
+apt-transport-https  
+gnupg  
+debhelper  
+libcap2-bin  
+
+and their dependencies.
 
 ---
 
-## 4. Install Wazuh Offline
+# 5. Run the Wazuh Offline Installer
 
-Make the script executable with `chmod +x wazuh-install.sh`.
+Return to the installation directory:
 
-Run assisted offline installation with:
-```bash
+cd /opt/wazuh-offline
+
+Make the script executable:
+
+chmod +x wazuh-install.sh
+
+Run the assisted offline installation:
+
 bash wazuh-install.sh --offline-installation -a
-```
 
-- The script detects installed packages and configures a **single-node offline Wazuh**  
-- Generates TLS certificates and internal users automatically
+The installer will automatically:
 
----
-
-## 5. Verify Services
-
-Check status of services:
-
-- `sudo systemctl status wazuh-manager`  
-- `sudo systemctl status wazuh-indexer`  
-- `sudo systemctl status wazuh-dashboard`
-
-Useful logs:
-
-- `sudo tail -f /var/ossec/logs/ossec.log`  
-- `sudo tail -f /var/log/wazuh-indexer/wazuh-cluster.log`
+- Install Wazuh Manager
+- Install Wazuh Indexer
+- Install Wazuh Dashboard
+- Generate TLS certificates
+- Configure internal users
+- Configure a single-node deployment
 
 ---
 
-## 6. Access the Dashboard
+# 6. Verify Installation
 
-Find the VM IP using `ip a`.
+Check service status:
 
-Open browser from host or internal network:
+sudo systemctl status wazuh-manager
+sudo systemctl status wazuh-indexer
+sudo systemctl status wazuh-dashboard
 
-`https://<VM-IP>:5601`
+Check logs if necessary:
 
-- Default user: `admin`  
-- Reset password offline:
+sudo tail -f /var/ossec/logs/ossec.log
+sudo tail -f /var/log/wazuh-indexer/wazuh-cluster.log
 
-`sudo /usr/share/wazuh-dashboard/bin/wazuh-dashboard-users user passwd admin`
+---
+
+# 7. Access the Wazuh Dashboard
+
+Get the system IP address:
+
+ip a
+
+Open in browser:
+
+https://<VM-IP>:5601
+
+Default credentials:
+
+User: admin
+
+Reset password offline if needed:
+
+sudo /usr/share/wazuh-dashboard/bin/wazuh-dashboard-users user passwd admin
+
+---
+
+# Notes
+
+This installation method is designed for:
+
+- Air-gapped environments
+- Security labs
+- SOC deployments
+- Offline infrastructure
